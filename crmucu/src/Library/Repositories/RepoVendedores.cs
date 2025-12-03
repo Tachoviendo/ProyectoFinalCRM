@@ -86,5 +86,39 @@ namespace CrmUcu.Repositories
             }
             return _instancia;
         }
+
+        public List <Vendedor> vendedoresConVentas(){
+            var listado = new List<Vendedor>();
+            var Vendedores = new List<Vendedor>();
+            //traigo a todos los vendedores.
+            
+            var repoCliente = RepositorioCliente.ObtenerInstancia();
+            Vendedores = ObtenerTodos();
+
+            //busco el id de los clientes del vendedor
+            foreach (var vendedor in Vendedores)
+            {
+                foreach (var idCliente in vendedor.ObtenerClientes())
+                {
+                    var cliente = repoCliente.BuscarPorId(idCliente);
+
+                    //para cada cliente, busco si tiene alguna venta
+                    //si tiene alguna venta, añado al vendedor que tiene asignado al listado
+                    if (cliente.Ventas.Count() != 0)
+                    {
+                        //evito duplicados con este if
+                        if (!listado.Contains(vendedor)){
+                            listado.Add(vendedor);
+                        }
+
+                    }
+                        
+                }
+                
+
+                
+            }
+            return listado;
+        }
     }
 }

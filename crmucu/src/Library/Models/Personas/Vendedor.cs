@@ -521,5 +521,101 @@ namespace CrmUcu.Models.Personas
             
             return misClientesConEtiqueta;
         }
+
+
+        public Dictionary<Vendedor, decimal> mejoresVendedores(int montoMinimo){
+            //traigo la instancia del singleton de repoVendedores 
+            
+            var repoVendedores = RepositorioVendedor.ObtenerInstancia();
+            var vendedoresConVentas = repoVendedores.vendedoresConVentas();
+
+            
+            Dictionary<Vendedor, decimal> listado = new Dictionary<Vendedor, decimal>();
+            if (vendedoresConVentas.Count() == 0){
+                return listado;    
+            }
+
+
+            List<decimal> montosVendedores = new List<decimal>();
+            // traigo la instancia del singleton de Client es
+
+            var repoClientes = RepositorioCliente.ObtenerInstancia();
+
+            //calculo las el total de ventas de todos los clientes de x vendedor.
+            foreach(var vendedor in vendedoresConVentas)
+            {
+                decimal totalVendedor = 0;
+                    foreach (var idCliente in vendedor.Clientes)
+                {
+                    var cliente = repoClientes.BuscarPorId(idCliente);
+                    decimal totalCliente = 0;
+                    foreach (var venta in cliente.Ventas){
+                        totalCliente += venta.Monto;
+                    }
+                    totalVendedor += totalCliente;
+                }
+                montosVendedores.Add(totalVendedor);
+
+            }
+            
+            //ahora tengo 2 listas, una de vendedores y otra con sus totales, que coinciden en su posición. al VendedoresConVentas[0] le corresponde montosVendedores[0]
+            
+            List<Vendedor> rankingVendedores = new List<Vendedor>();
+            //ahora voy a filtrar los 5 mas grandes 
+            if(vendedoresConVentas.Count() >= 5){
+
+            
+                
+                for (int i = 4; i > -1; i--)
+                {
+                    if (montosVendedores[i]>= montoMinimo){
+                        
+                        int idMayor = montosVendedores.IndexOf(montosVendedores.Max());
+                        rankingVendedores.Add(vendedoresConVentas[idMayor]);
+                        montosVendedores.Remove(montosVendedores[idMayor]);
+                        vendedoresConVentas.Remove(vendedoresConVentas[idMayor]);
+
+
+                    }
+                   
+                
+                }
+
+                //retorno un ranking de mayor a menos de vendedores.
+             
+            }
+            else{
+
+                for (int i = vendedoresConVentas.Count(); i > -1; i--)
+                {
+
+                    if (montosVendedores[i]>= montoMinimo){
+                        
+                        int idMayor = montosVendedores.IndexOf(montosVendedores.Max());
+                        rankingVendedores.Add(vendedoresConVentas[idMayor]);
+                        montosVendedores.Remove(montosVendedores[idMayor]);
+                        vendedoresConVentas.Remove(vendedoresConVentas[idMayor]);
+
+
+                    }
+                   
+                
+                }
+                //organizo de mayor a menor los vendedores
+                
+                               
+            }
+
+            for (int i= 0; i< rankingVendedores.Count(); i++)
+            {
+                listado.Add(rankingVendedores[i], montosVendedores[i] );
+            }
+
+            return listado;
+
+            
+
+
+        }
     }
 }
